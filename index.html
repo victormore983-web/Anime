@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Alice Zuberg - Full Experience</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: #000;
+      touch-action: none;
+      font-family: 'Georgia', 'Segoe UI', sans-serif;
+    }
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: #000;
+    }
+    iframe {
+      position: absolute;
+      top: -8%;
+      left: -8%;
+      width: 116%;
+      height: 116%;
+      border: 0;
+      z-index: 1;
+      pointer-events: auto;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+    }
+    #touchOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffd700;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: opacity 0.5s ease;
+    }
+    #touchOverlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .pulse-icon {
+      font-size: 52px;
+      margin-bottom: 15px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+    .audio-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 5;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 215, 0, 0.6);
+      color: #ffd700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Elemento de audio nativo integrado con tu pista -->
+    <audio id="bgAudio" loop preload="auto">
+      <source src="anime.mp3" type="audio/mpeg">
+      <source src="https://upload.wikimedia.org/wikipedia/commons/0/0a/Erik_Satie_-_Gymnop%C3%A9die_No._1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Modelo 3D Alice Zuberg -->
+    <iframe 
+      title="Sword Art Online Alicization - Alice Zuberg" 
+      allow="autoplay; fullscreen"
+      src="https://sketchfab.com/models/2c868ceee1b74d1d925cf03ce1a0c5a9/embed?autostart=1&transparent=1&ui_controls=0&ui_infos=0&ui_inspector=0&ui_stop=0&ui_watermark=0&ui_watermark_link=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0&ui_fullscreen=0&ui_annotations=0">
+    </iframe>
+
+    <!-- Pantalla táctil para desbloquear el audio del navegador -->
+    <div id="touchOverlay">
+      <div class="pulse-icon">🎵</div>
+      <p style="font-size: 19px; text-shadow: 0 0 12px rgba(255,215,0,0.9); font-weight: bold;">Toca la pantalla para Iniciar</p>
+    </div>
+
+    <button class="audio-btn" id="audioBtn" style="display:none;">♪</button>
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const touchOverlay = document.getElementById('touchOverlay');
+    const audioBtn = document.getElementById('audioBtn');
+    const bgAudio = document.getElementById('bgAudio');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    bgAudio.volume = 0.8;
+    let audioStarted = false;
+
+    function startMusic() {
+      if (audioStarted) return;
+      
+      bgAudio.play().then(() => {
+        audioStarted = true;
+        touchOverlay.classList.add('hidden');
+        setTimeout(() => touchOverlay.style.display = 'none', 500);
+        audioBtn.style.display = 'flex';
+      }).catch(err => {
+        console.log("Error reproduciendo audio:", err);
+      });
+    }
+
+    touchOverlay.addEventListener('click', startMusic);
+    touchOverlay.addEventListener('touchstart', startMusic);
+
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (bgAudio.paused) {
+        bgAudio.play();
+        audioBtn.textContent = '♪';
+        audioBtn.style.color = '#ffd700';
+      } else {
+        bgAudio.pause();
+        audioBtn.textContent = '✕';
+        audioBtn.style.color = '#ff6b6b';
+      }
+    });
+
+    // Textos Flotantes (Coreano + VICPERSI)
+    const textPhrases = [
+      { text: "VICPERSI", isSpanish: true },
+      { text: "사랑해", isSpanish: false },
+      { text: "영원히 함께", isSpanish: false },
+      { text: "VICPERSI", isSpanish: true },
+      { text: "내 사랑", isSpanish: false },
+      { text: "너와 함께", isSpanish: false },
+      { text: "VICPERSI", isSpanish: true },
+      { text: "운명처럼", isSpanish: false },
+      { text: "영원한 사랑", isSpanish: false },
+      { text: "Eternamente Juntos", isSpanish: true }
+    ];
+
+    class FloatingText {
+      constructor(initialSpawn = false) {
+        this.reset(initialSpawn);
+      }
+      reset(initialSpawn = false) {
+        const item = textPhrases[Math.floor(Math.random() * textPhrases.length)];
+        this.text = item.text;
+        this.isSpanish = item.isSpanish;
+        this.x = Math.random() * (canvas.width - 60) + 30;
+        this.y = initialSpawn ? Math.random() * canvas.height : canvas.height + 20 + Math.random() * (canvas.height * 0.3);
+        this.speedY = 0.6 + Math.random() * 0.9;
+        this.size = this.isSpanish ? 22 + Math.random() * 6 : 18 + Math.random() * 5;
+        this.drift = (Math.random() - 0.5) * 0.6;
+      }
+      update() {
+        this.y -= this.speedY;
+        this.x += this.drift;
+        this.opacity = Math.min(1, this.y / (canvas.height * 0.8));
+        if (this.y < -40 || this.opacity <= 0) this.reset(false);
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, this.opacity));
+        ctx.textAlign = 'center';
+        if (this.isSpanish) {
+          ctx.font = `bold ${this.size}px 'Georgia', serif`;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(255, 215, 0, 1)';
+          ctx.shadowBlur = 18;
+        } else {
+          ctx.font = `${this.size}px 'Segoe UI', sans-serif`;
+          ctx.fillStyle = 'rgba(255, 245, 210, 0.92)';
+          ctx.shadowColor = 'rgba(255, 180, 0, 0.7)';
+          ctx.shadowBlur = 10;
+        }
+        ctx.fillText(this.text, this.x, this.y);
+        ctx.restore();
+      }
+    }
+
+    // Efecto de Sacudida (Shake Effect)
+    let windVelocityX = 0;
+    let goldSparks = [];
+
+    class Sparkle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = -20;
+        this.speedY = 6 + Math.random() * 8;
+        this.speedX = 6 + Math.random() * 12;
+        this.size = 2 + Math.random() * 4;
+        this.alpha = 1;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.alpha -= 0.015;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.fillStyle = '#ffd700';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function triggerShakeWind() {
+      windVelocityX = 40;
+      for (let i = 0; i < 70; i++) goldSparks.push(new Sparkle());
+    }
+
+    let lastX = 0, lastY = 0, lastZ = 0;
+    let lastTime = 0;
+
+    if (window.DeviceMotionEvent) {
+      window.addEventListener('devicemotion', (e) => {
+        const acc = e.accelerationIncludingGravity;
+        if (!acc) return;
+        const currentTime = Date.now();
+        if ((currentTime - lastTime) > 100) {
+          const diffTime = currentTime - lastTime;
+          lastTime = currentTime;
+          const speed = Math.abs(acc.x + acc.y + acc.z - lastX - lastY - lastZ) / diffTime * 10000;
+          if (speed > 1200) triggerShakeWind();
+          lastX = acc.x; lastY = acc.y; lastZ = acc.z;
+        }
+      });
+    }
+
+    // Pétalos Dorados
+    class Petal {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = -20 - Math.random() * 50;
+        this.size = 7 + Math.random() * 10;
+        this.speedY = 1.2 + Math.random() * 2.2;
+        this.speedX = (Math.random() - 0.5) * 1.2;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = (Math.random() - 0.5) * 0.04;
+        this.color = ['#ffb703', '#ffd700', '#fb8500', '#e0a96d'][Math.floor(Math.random() * 4)];
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX + Math.sin(this.y * 0.02) + windVelocityX;
+        this.angle += this.spin;
+        if (this.y > canvas.height + 20 || this.x > canvas.width + 100) this.reset();
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-this.size, -this.size / 2, -this.size, this.size, 0, this.size * 1.5);
+        ctx.bezierCurveTo(this.size, this.size, this.size, -this.size / 2, 0, 0);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    const floatingTexts = Array.from({ length: 14 }, () => new FloatingText(true));
+    const petals = Array.from({ length: 45 }, () => new Petal());
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (windVelocityX > 0) {
+        windVelocityX *= 0.94;
+        if (windVelocityX < 0.1) windVelocityX = 0;
+      }
+      for (let i = goldSparks.length - 1; i >= 0; i--) {
+        const s = goldSparks[i];
+        s.update(); s.draw();
+        if (s.alpha <= 0) goldSparks.splice(i, 1);
+      }
+      petals.forEach(p => { p.update(); p.draw(); });
+      floatingTexts.forEach(t => { t.update(); t.draw(); });
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
